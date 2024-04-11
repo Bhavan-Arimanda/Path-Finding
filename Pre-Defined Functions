@@ -1,0 +1,83 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from queue import PriorityQueue
+import random
+
+
+
+# Actions include diagonal movements
+actions = [(0, 1), (0, -1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]
+
+# Function to check if a position is valid in the grid
+def is_valid(pos):
+    x, y = pos
+    return 0 <= x < grid_width and 0 <= y < grid_height
+
+# Euclidean distance heuristic for diagonal movements
+def heuristic(a, b):
+    return np.sqrt((a[0] - b[0])**2 + (a[1] - b[1])**2)
+
+# A* algorithm implementation
+def astar(start, goal, obstacles):
+    open_list = PriorityQueue()
+    open_list.put((0, start))
+    came_from = {}
+    cost_so_far = {}
+    came_from[start] = None
+    cost_so_far[start] = 0
+
+    while not open_list.empty():
+        current_cost, current_node = open_list.get()
+
+        if current_node == goal:
+            break
+
+        for action in actions:
+            next_node = (current_node[0] + action[0], current_node[1] + action[1])
+            if next_node in obstacles or not is_valid(next_node):
+                continue
+            new_cost = cost_so_far[current_node] + 1
+            if next_node not in cost_so_far or new_cost < cost_so_far[next_node]:
+                cost_so_far[next_node] = new_cost
+                priority = new_cost + heuristic(goal, next_node)
+                open_list.put((priority, next_node))
+                came_from[next_node] = current_node
+
+    path = []
+    current_node = goal
+    while current_node != start:
+        path.append(current_node)
+        current_node = came_from.get(current_node, None)
+        if current_node is None:
+            return None
+    path.append(start)
+    path.reverse()
+
+    return path
+
+def visualize_grid(grid_size, start, goal, obstacles, path):
+    fig, ax = plt.subplots(figsize=(grid_size[0], grid_size[1]))
+    ax.set_xlim([0, grid_size[0]])
+    ax.set_ylim([0, grid_size[1]])
+
+    #Draw grid lines
+    ax.set_xticks(np.arange(0, grid_size[0], 1))
+    ax.set_yticks(np.arange(0, grid_size[1], 1))
+    ax.grid(which='both')
+
+    # Mark start and goal
+    ax.plot(start[1], start[0], 'go', markersize=10, label='Start')  # Start position
+    ax.plot(goal[1], goal[0], 'ro', markersize=10, label='Goal')  # Goal position
+
+    # Plot obstacles
+    for obs in obstacles:
+        ax.fill([obs[1], obs[1]+1, obs[1]+1, obs[1]], [obs[0], obs[0], obs[0]+1, obs[0]+1], 'k')
+
+    # Plot the path
+    if path:
+        for i in range(1, len(path)):
+            ax.plot([path[i-1][1], path[i][1]], [path[i-1][0], path[i][0]], 'b-')
+
+    plt.gca().invert_yaxis()
+    plt.gca().set_aspect('equal', adjustable='box')
+    plt.show()
