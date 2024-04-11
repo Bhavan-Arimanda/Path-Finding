@@ -1,0 +1,27 @@
+# Grid dimensions and start/goal positions
+grid_width = 10
+grid_height = 10
+start_pos = (0, 0)
+goal_pos = (9, 9)
+
+import time
+
+# Use current time as the seed for random number generator to get new obstacles each run
+random.seed(int(time.time()))
+
+# Generate 25 random obstacles
+obstacles = set()
+while len(obstacles) < 25:
+    obstacle = (random.randint(0, grid_height-1), random.randint(0, grid_width-1))
+    if obstacle not in [start_pos, goal_pos]:
+        obstacles.add(obstacle)
+
+# Remaining code for path finding and visualization goes here...
+
+# Find the path using A* algorithm
+path = astar(start_pos, goal_pos, obstacles)
+
+# Visualization function remains the same...
+
+# Visualize the result
+visualize_grid((grid_width, grid_height), start_pos, goal_pos, obstacles, path)
